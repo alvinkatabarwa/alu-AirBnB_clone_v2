@@ -1,15 +1,29 @@
-#!/usr/bin/env bash
-# Script that sets up web servers for the deployment of web_static.
+#!/bin/bash
+
+# Install Nginx if not already installed
 sudo apt-get update
 sudo apt-get -y install nginx
-sudo mkdir -p /data/
-sudo mkdir -p /data/web_static/
-sudo mkdir -p /data/web_static/releases/
-sudo mkdir -p /data/web_static/shared/
+
+# Create necessary folders and files
 sudo mkdir -p /data/web_static/releases/test/
-echo "Airbnb clone- Deploy static" | sudo tee /data/web_static/releases/test/index.html
+sudo mkdir -p /data/web_static/shared/
+sudo echo "Hello, this is a test index.html file." | sudo tee /data/web_static/releases/test/index.html
+
+# Create symbolic link
+sudo rm -rf /data/web_static/current
 sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
+
+# Give ownership to ubuntu user and group
 sudo chown -R ubuntu:ubuntu /data/
-sudo sed -i "45 a \ \n\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}" /etc/nginx/sites-enabled/default
+
+# Update Nginx configuration
+sudo sed -i '/server_name _;/ a\
+\\n\
+    location /hbnb_static/ {\
+        alias /data/web_static/current/;\
+        index index.html;\
+    }' /etc/nginx/sites-available/default
+
+# Restart Nginx
 sudo service nginx restart
-exit 0
+
